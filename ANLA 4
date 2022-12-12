@@ -1,0 +1,77 @@
+import numpy as np
+
+A = np.array([[2, 1, 1, 0],
+              [4, 3, 3, 1],
+              [8, 7, 9, 5],
+              [6, 7, 9, 8]])
+
+def lu(A):
+    # TODO
+    U = None
+    L = None
+    m = A.shape[0]
+    U = A.astype(float)
+    L = np.identity(m)
+    for k in range (m-1):
+        for j in range (k+1,m):
+            L[j][k] = np.divide(U[j][k],U[k][k])
+            U[j][k:m] = U[j][k:m] - np.multiply(L[j][k],U[k][k:m])
+    return (L, U)
+
+def maxabs_idx(A):
+    # TODO
+    i, j = (0, 0)
+    max=np.absolute(A[0][0])
+    (m,n) = A.shape
+    for k in range (m):
+        for l in range (n):
+             if np.absolute(A[k][l])>max:
+                (i,j)=(k,l)
+                max=np.absolute(A[k][l])
+    return (i, j)
+
+def __swap__(A, i1, i2, rows=True):
+    if rows:
+        A[[i1, i2]] = A[[i2, i1]]
+    else:
+        A[:, [i1, i2]] = A[:, [i2, i1]]
+    return A
+
+def lu_complete(A):
+    # TODO
+    # U = None
+    # L = None
+    # P = None
+    # Q = None
+    # return (P, Q, L, U)
+    n, m = A.shape
+    if n != m:
+        print("[GAUSSELIM] Error: This only works for square matrices!")
+        return -1, -1, -1, -1
+    # Initialize L, U, P, Q as well as vectors p, q
+    L, U = np.eye(n, dtype=np.complex), np.copy(A).astype(np.complex)
+    p, q = np.array(range(n)), np.array(range(n))
+    P, Q = np.eye(n, dtype=np.complex), np.eye(n, dtype=np.complex)
+    for k in range(n - 1):
+        m = np.max(np.absolute(U[k:, k:]), axis=0)
+        mc = np.argmax(np.absolute(U[k:, k:]), axis=0)
+        r, c = np.array([np.argmax(m), mc[np.argmax(m)]]) + k
+
+        # Permute matrices and vectors
+        p[[k, r]] = p[[r, k]]
+        q[[k, c]] = q[[c, k]]
+        U[:, k:] = __swap__(U[:, k:], r, k)
+        U = __swap__(U, c, k, False)
+        L[:, :k] = __swap__(L[:, :k], r, k)
+    # Elimination process
+        for i in range(k + 1, n):
+            L[i, k] = U[i, k] / U[k, k]
+            U[i, k:] = U[i, k:] - L[i, k] * U[k, k:]
+    P = P[p, :]
+    Q = Q[:, q]
+    return P, Q, L, U
+P, Q, L, U = lu_complete(A)
+print(P)
+print(Q)
+print(np.matmul(np.matmul(P,A),Q))
+print(np.matmul(L,U))
