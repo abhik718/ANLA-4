@@ -47,7 +47,7 @@ def lu_complete(A):
         L[[k, i+k], 0:k] = L[[i+k, k], 0:k]
         #L[0:k, [k, j+k]] = L[0:k, [j+k, k]]
 
-        Q[k:m, [k, j+k]] = Q[k:m, [j+k, k]] # save swaps
+        Q[:, [k, j+k]] = Q[:, [j+k, k]] # save swaps
         P[[k, i+k], :] = P[[i+k, k], :]
 
         #U[k+1:m, k] /= U[k,k]
