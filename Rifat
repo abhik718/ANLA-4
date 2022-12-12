@@ -1,0 +1,72 @@
+import copy
+
+import numpy as np
+
+
+def lu(A):
+    # TODO
+    if A.dtype == 'int32':
+        A.astype('float64')
+    [m, n] = A.shape
+    U = copy.deepcopy(A)
+    L = np.eye(A.shape[0], dtype=A.dtype)
+    for k in range(m-1):
+        for j in range(k+1, m):
+            L[j, k] = U[j, k]/U[k, k]
+            U[j, k:m] -= L[j,k]*U[k, k:m]
+    return (L, U)
+
+
+def maxabs_idx(A):
+    # TODO
+    [m, n] = A.shape
+    r_m, c_m = (0,0)
+    max = A[0,0]
+    for i in range(m):
+        for j in range(n):
+            if abs(A[i,j]) > max:
+                r_m, c_m = i, j
+                max = abs(A[i,j])
+    return (r_m, c_m)
+
+
+def lu_complete(A):
+    # TODO
+    if A.dtype == 'int32':
+        A = A.astype('float64')
+    [m, n] = A.shape
+    U = copy.deepcopy(A)
+    L = np.eye(A.shape[0], dtype=A.dtype)
+    P = np.eye(A.shape[0], dtype=A.dtype)
+    Q = np.eye(A.shape[0], dtype=A.dtype)
+    for k in range(m-1):
+        [i, j] = maxabs_idx(U[k:m, k:m])
+        U[[k, i+k], k:m] = U[[i+k, k], k:m]
+        U[k:m, [k, j+k]] = U[k:m, [j+k, k]] #swap rows & columns
+
+        L[[k, i+k], 0:k] = L[[i+k, k], 0:k]
+        #L[0:k, [k, j+k]] = L[0:k, [j+k, k]]
+
+        Q[k:m, [k, j+k]] = Q[k:m, [j+k, k]] # save swaps
+        P[[k, i+k], :] = P[[i+k, k], :]
+
+        #U[k+1:m, k] /= U[k,k]
+        for l in range(k+1, m):
+            L[l, k] = U[l, k] / U[k, k]
+            #L[k,l] = U[k, l] / U[k ,k]
+
+            U[l, k:m] -= L[l, k] * U[k, k:m]
+            #U[k:m, l] -= U[k:m, k] * Q[k, l]
+    return (P, Q, L, U)
+
+
+A = np.array([[2, 1, 1, 0],[4, 3, 3, 1],[8, 7, 9, 5],[6, 7, 9, 8]])
+print(A)
+P, Q, L, U = lu_complete(A)
+print(P)
+print(Q)
+#print(L)
+#print(U)
+#print(np.matmul(P, np.matmul(A, Q)))
+print(P@A@Q)
+print(np.matmul(L,U))
